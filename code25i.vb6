@@ -1,0 +1,44 @@
+Public Function Code25I$(chaine$, Optional key As Boolean)
+  'V 2.0.0
+  'Parametres : * une chaine
+  '             * un drapeau vrai si une cle doit etre ajoutee
+  'Parameters : * a string
+  '             * a flag true if a key must be added
+  'Retour : * une chaine qui, affichee avec la police CODE25I.TTF, donne le code barre
+  '         * une chaine vide si parametre fourni incorrect
+  'Return : * a string which give the bar code when it is dispayed with CODE25I.TTF font
+  '         * an empty string if the supplied parameter is no good
+  Dim i%, checksum&, dummy%
+  Code25I$ = ""
+  If Len(chaine$) > 0 Then
+    'Verifier si caracteres valides
+    'Check for valid characters
+    For i% = 1 To Len(chaine$)
+      If Asc(Mid$(chaine$, i%, 1)) < 48 Or Asc(Mid$(chaine$, i%, 1)) > 57 Then Exit Function
+    Next
+    'Ajouter si necessaire la cle
+    'Add if necessary the checksum
+    If key Then
+      For i% = Len(chaine$) To 1 Step -2
+        checksum& = checksum& + Val(Mid$(chaine$, i%, 1))
+      Next
+      checksum& = checksum& * 3
+      For i% = Len(chaine$) - 1 To 1 Step -2
+        checksum& = checksum& + Val(Mid$(chaine$, i%, 1))
+      Next
+      chaine$ = chaine$ & (10 - checksum& Mod 10) Mod 10
+    End If
+    'Verifier si la longueur est paire
+    'Check if the length is odd
+    If Len(chaine$) \ 2 <> Len(chaine$) / 2 Then Exit Function
+    'Calculer la chaine de code
+    'Calculation of the code string
+    For i% = 1 To Len(chaine$) Step 2
+      dummy% = Val(Mid$(chaine$, i%, 2))
+      dummy% = IIf(dummy% < 94, dummy% + 33, dummy% + 101)
+      Code25I$ = Code25I$ & Chr$(dummy%)
+    Next
+    'Ajoute START et STOP / Add START and STOP
+    Code25I$ = Chr$(201) & Code25I$ & Chr$(202)
+  End If
+End Function
